@@ -1,8 +1,86 @@
 #!/usr/bin/env node
+
+/**
+ * "D:\work\git-json-merge\bin\git-json-merge.cmd" %merged %theirs %mine %bas
+ * .\bin\git-json-merge.cmd D:\master_standby\ro_editor_data.pr\Activity\ActivitySheetMetaData.txt D:\master_standby\ro_editor_data.pr\Activity\ActivitySheetMetaData.txt.REMOTE.txt D:\master_standby\ro_editor_data.pr\Activity\ActivitySheetMetaData.txt.LOCAL.txt D:\master_standby\ro_editor_data.pr\Activity\ActivitySheetMetaData.txt.BASE.txt
+ 
+MeldPortable:
+"D:\work\git-json-merge\bin\git-json-merge.cmd" %merged %theirs %mine %base "D:\portableapps.com\PortableApps\MeldPortable\MeldPortable.exe %mine %merged %theirs"
+"D:\work\git-json-merge\bin\git-json-merge.cmd" %merged %theirs %mine %base "D:\portableapps.com\PortableApps\MeldPortable\MeldPortable.exe %base %mine"
+
+TortoiseGitMerge:
+"D:\work\git-json-merge\bin\git-json-merge.cmd" %merged %theirs %mine %base "TortoiseGitMerge.exe -base:%base -theirs:%theirs -mine:%mine -merged:%merged"
+"D:\work\git-json-merge\bin\git-json-merge.cmd" %merged %theirs %mine %base "TortoiseGitMerge.exe -base:%base -mine:%mine"
+
+[
+  'D:\\bin\\nodejs\\node.exe',
+  'D:\\work\\git-json-merge\\bin\\git-json-merge',
+  'D:\\master_standby\\ro_editor_data.pr\\Activity\\ActivitySheetMetaData.txt',
+  'D:\\master_standby\\ro_editor_data.pr\\Activity\\ActivitySheetMetaData.txt.REMOTE.txt',
+  'D:\\master_standby\\ro_editor_data.pr\\Activity\\ActivitySheetMetaData.txt.LOCAL.txt',
+  'D:\\master_standby\\ro_editor_data.pr\\Activity\\ActivitySheetMetaData.txt.BASE.txt',
+  'D:\\portableapps.com\\PortableApps\\MeldPortable\\MeldPortable.exe'
+]
+ */
 var gitJsonMerge = require('./../lib/git-json-merge.js');
+var logger = require("./../lib/log.js").logger;
+var exec = require('child_process').execFile;
 
-var oursFileName = process.argv[2];
-var baseFileName = process.argv[3];
-var theirsFileName = process.argv[4];
+logger.debug(["git-json-merge.1", process.argv]);
 
-gitJsonMerge.mergeJsonFiles(oursFileName, baseFileName, theirsFileName);
+var mergedFileName = process.argv[2];
+mergedFileName = mergedFileName.substring(0, 1) == "%" ? "" : mergedFileName;
+
+var theirsFileName = process.argv[3];
+theirsFileName = theirsFileName.substring(0, 1) == "%" ? "" : theirsFileName;
+
+var oursFileName = process.argv[4];
+var baseFileName = process.argv[5];
+var mergeTool = process.argv[6];
+
+try {
+
+  if (oursFileName != "" && baseFileName != "" && theirsFileName != "" && mergedFileName != "") {
+    gitJsonMerge.mergeJsonFiles(oursFileName, baseFileName, theirsFileName, mergedFileName);
+  }
+
+  // exec(mergeTool + " " + oursFileName + " " + mergedFileName + " " + theirsFileName, function (err, data) {
+  //   logger.debug(["git-json-merge.exec", err, data.toString()]);
+  // });
+
+  // require('child_process').execFile("ls", ["-a"], function (err, data) {
+  //   logger.debug(["git-json-merge.exec", err, data.toString()]);
+  // });
+
+  if (mergeTool != "") {
+    // require('child_process').execFile("D:\\Program File\\TortoiseGit\\bin\\TortoiseGitMerge.exe",
+    //   [
+    //     "-base:'C:\Users\dream\AppData\Local\Temp\TortoiseGit\6000-1ccf2c41.00d.txt'",
+    //     "-mine:'D:\master_standby\ro_editor_data.pr\Area\6000.txt'",
+    //   ], function (err, data) {
+    //     logger.debug(["git-json-merge.exec", err, data.toString()]);
+    //   });
+
+    require('child_process').exec(mergeTool, [], function (err, data) {
+      logger.debug(["git-json-merge.exec", err, data.toString()]);
+    });
+
+    // require('child_process').execFile(mergeTool, [], {
+    //   stdio: 'inherit',
+    // }).on('error', function (err) {
+    //   logger.debug(["git-json-merge.exec.error", mergeTool, err]);
+    // }).on('exit', function (err) {
+    //   logger.debug(["git-json-merge.exec.exit", mergeTool, err]);
+    // });
+
+    // require('child_process').spawn(mergeTool, [], {
+    //   stdio: 'inherit',
+    // }).on('error', function (err) {
+    //   logger.debug(["git-json-merge.exec.error", mergeTool, err]);
+    // }).on('exit', function (err) {
+    //   logger.debug(["git-json-merge.exec.exit", mergeTool, err]);
+    // });
+  }
+} catch (err) {
+  logger.error("git-json-merge.err", err);
+}
